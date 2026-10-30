@@ -127,7 +127,7 @@ case "$DEVICE" in
           echo "--- goodix/berlin modules:"; find . -iname '*goodix*' -o -iname '*berlin*' | head; \
           echo "--- touch firmware:"; find "$MNT"/lib/firmware -iname '*gt9*' -o -iname '*shen*' | head -12; \
           echo "--- dts touch node:"; strings "$DTB" | grep -i -E 'goodix|touch|berlin' | head -8; \
-          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log"
+          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log" || true
         ;;
     sm8250-xiaomi-thyme)
         ( cd "$MNT/usr/lib/modules/$KVER" && \
@@ -135,7 +135,7 @@ case "$DEVICE" in
           echo "--- touch firmware:"; find "$MNT"/usr/lib/firmware -iname '*ftb*' -o -iname '*fts*' | head -12; \
           echo "--- dts touch node:"; strings "$DTB" | grep -i -E 'fts|touch' | head -8; \
           echo "--- audio firmware:"; ls "$MNT/usr/lib/firmware/cirrus" 2>/dev/null | head -8; \
-          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log"
+          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log" || true
         ;;
 esac
 
@@ -181,7 +181,7 @@ cp -a "$REPO/system_files/usr/share/alsa/ucm2/." "$MNT/usr/share/alsa/ucm2/"
       echo "--- audio codec/amp modules:"; find "$MNT/usr/lib/modules/$KVER" -iname '*cs35l41*' -o -iname '*wcd93*' | head -8
       ;;
   esac
-} 2>&1 | tee -a "$OUT/touchchain.log"
+} 2>&1 | tee -a "$OUT/touchchain.log" || true
 
 echo "==> [5f] Steam offline fallback wrapper"
 # The container build already bakes /usr/bin/steam-now (52-*-device-fixes);
