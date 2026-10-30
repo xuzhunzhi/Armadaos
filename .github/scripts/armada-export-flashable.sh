@@ -127,7 +127,7 @@ case "$DEVICE" in
           echo "--- goodix/berlin modules:"; find . -iname '*goodix*' -o -iname '*berlin*' | head; \
           echo "--- touch firmware:"; find "$MNT"/lib/firmware -iname '*gt9*' -o -iname '*shen*' | head -12; \
           echo "--- dts touch node:"; strings "$DTB" | grep -i -E 'goodix|touch|berlin' | head -8; \
-          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log" || true
+          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log"
         ;;
     sm8250-xiaomi-thyme)
         ( cd "$MNT/usr/lib/modules/$KVER" && \
@@ -135,7 +135,7 @@ case "$DEVICE" in
           echo "--- touch firmware:"; find "$MNT"/usr/lib/firmware -iname '*ftb*' -o -iname '*fts*' | head -12; \
           echo "--- dts touch node:"; strings "$DTB" | grep -i -E 'fts|touch' | head -8; \
           echo "--- audio firmware:"; ls "$MNT/usr/lib/firmware/cirrus" 2>/dev/null | head -8; \
-          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log" || true
+          echo "--- usb gadget modules:"; find . -path '*gadget*' -name '*.ko*' | head -8 ) 2>&1 | tee "$OUT/touchchain.log"
         ;;
 esac
 
@@ -181,7 +181,7 @@ cp -a "$REPO/system_files/usr/share/alsa/ucm2/." "$MNT/usr/share/alsa/ucm2/"
       echo "--- audio codec/amp modules:"; find "$MNT/usr/lib/modules/$KVER" -iname '*cs35l41*' -o -iname '*wcd93*' | head -8
       ;;
   esac
-} 2>&1 | tee -a "$OUT/touchchain.log" || true
+} 2>&1 | tee -a "$OUT/touchchain.log"
 
 echo "==> [5f] Steam offline fallback wrapper"
 # The container build already bakes /usr/bin/steam-now (52-*-device-fixes);
@@ -310,6 +310,11 @@ fi
 
 CMDLINE="root=PARTLABEL=${ROOT_PART} rw rootwait console=tty0"
 [ "$MODE" = "quiet" ] && CMDLINE="$CMDLINE quiet" || CMDLINE="$CMDLINE loglevel=7"
+if [ "$DEVICE" = "sm8250-xiaomi-thyme" ]; then
+    # Stock HyperOS (Android 13) ABL: boot header v3, raw arm64 Image.
+    # The mainline DTB is compiled into the kernel (head.S __dtb_start).
+    python3 "$(dirname "CMDLINE="root=PARTLABEL=${ROOT_PART} rw rootwait console=tty0"
+[ "$MODE" = "quiet" ] && CMDLINE="$CMDLINE quiet" || CMDLINE="$CMDLINE loglevel=7"
 gzip -c "$VMLINUZ" > /tmp/kernel.gz
 cat "$DTB" >> /tmp/kernel.gz
 # Geometry from the device profile (sheng: header-v0/4096;
@@ -319,7 +324,31 @@ python3 "$(dirname "$0")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
     ${DEVICE_BOOTIMG_ARGS} \
     --os_patch_level "$(date '+%Y-%m')" --cmdline "$CMDLINE" \
     -o "$OUT/boot_b.img"
-rm -f /tmp/kernel.gz
+rm -f /tmp/kernel.gz")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
+        --kernel "$VMLINUZ" --ramdisk "$INITRD" --header_version 3 \
+        --cmdline "$CMDLINE" -o "$OUT/boot_b.img"
+else
+    gzip -c "$VMLINUZ" > /tmp/kernel.gz
+    cat "$DTB" >> /tmp/kernel.gz
+    # Geometry from the device profile (sheng: header-v0/4096).
+    python3 "$(dirname "CMDLINE="root=PARTLABEL=${ROOT_PART} rw rootwait console=tty0"
+[ "$MODE" = "quiet" ] && CMDLINE="$CMDLINE quiet" || CMDLINE="$CMDLINE loglevel=7"
+gzip -c "$VMLINUZ" > /tmp/kernel.gz
+cat "$DTB" >> /tmp/kernel.gz
+# Geometry from the device profile (sheng: header-v0/4096;
+# thyme: header-v1/2048, kernel/tags 0x10000000).
+python3 "$(dirname "$0")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
+    --kernel /tmp/kernel.gz --ramdisk "$INITRD" \
+    ${DEVICE_BOOTIMG_ARGS} \
+    --os_patch_level "$(date '+%Y-%m')" --cmdline "$CMDLINE" \
+    -o "$OUT/boot_b.img"
+rm -f /tmp/kernel.gz")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
+        --kernel /tmp/kernel.gz --ramdisk "$INITRD" \
+        ${DEVICE_BOOTIMG_ARGS} \
+        --os_patch_level "$(date '+%Y-%m')" --cmdline "$CMDLINE" \
+        -o "$OUT/boot_b.img"
+    rm -f /tmp/kernel.gz
+fi
 echo "boot cmdline: $CMDLINE"
 
 echo "==> [6/7] Unmount + shrink to actual size + align + fsck"
