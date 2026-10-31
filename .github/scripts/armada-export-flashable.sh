@@ -20,7 +20,7 @@
 # Runs on the runner as root. Usage:
 #   armada-export-flashable.sh <ghcr-ref> <output-dir> <root-partition> <quiet|verbose> [device]
 # device defaults to sm8550-xiaomi-sheng; thyme = sm8250-xiaomi-thyme.
-set -euxo pipefail
+set -eux
 
 REF="${1:?container ref}"
 OUT="${2:?output dir}"
