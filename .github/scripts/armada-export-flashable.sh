@@ -313,36 +313,14 @@ CMDLINE="root=PARTLABEL=${ROOT_PART} rw rootwait console=tty0"
 if [ "$DEVICE" = "sm8250-xiaomi-thyme" ]; then
     # Stock HyperOS (Android 13) ABL: boot header v3, raw arm64 Image.
     # The mainline DTB is compiled into the kernel (head.S __dtb_start).
-    python3 "$(dirname "CMDLINE="root=PARTLABEL=${ROOT_PART} rw rootwait console=tty0"
-[ "$MODE" = "quiet" ] && CMDLINE="$CMDLINE quiet" || CMDLINE="$CMDLINE loglevel=7"
-gzip -c "$VMLINUZ" > /tmp/kernel.gz
-cat "$DTB" >> /tmp/kernel.gz
-# Geometry from the device profile (sheng: header-v0/4096;
-# thyme: header-v1/2048, kernel/tags 0x10000000).
-python3 "$(dirname "$0")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
-    --kernel /tmp/kernel.gz --ramdisk "$INITRD" \
-    ${DEVICE_BOOTIMG_ARGS} \
-    --os_patch_level "$(date '+%Y-%m')" --cmdline "$CMDLINE" \
-    -o "$OUT/boot_b.img"
-rm -f /tmp/kernel.gz")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
+    python3 "$(dirname "$0")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
         --kernel "$VMLINUZ" --ramdisk "$INITRD" --header_version 3 \
         --cmdline "$CMDLINE" -o "$OUT/boot_b.img"
 else
     gzip -c "$VMLINUZ" > /tmp/kernel.gz
     cat "$DTB" >> /tmp/kernel.gz
     # Geometry from the device profile (sheng: header-v0/4096).
-    python3 "$(dirname "CMDLINE="root=PARTLABEL=${ROOT_PART} rw rootwait console=tty0"
-[ "$MODE" = "quiet" ] && CMDLINE="$CMDLINE quiet" || CMDLINE="$CMDLINE loglevel=7"
-gzip -c "$VMLINUZ" > /tmp/kernel.gz
-cat "$DTB" >> /tmp/kernel.gz
-# Geometry from the device profile (sheng: header-v0/4096;
-# thyme: header-v1/2048, kernel/tags 0x10000000).
-python3 "$(dirname "$0")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
-    --kernel /tmp/kernel.gz --ramdisk "$INITRD" \
-    ${DEVICE_BOOTIMG_ARGS} \
-    --os_patch_level "$(date '+%Y-%m')" --cmdline "$CMDLINE" \
-    -o "$OUT/boot_b.img"
-rm -f /tmp/kernel.gz")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
+    python3 "$(dirname "$0")/../../build_files/vendor/mkbootimg/mkbootimg.py" \
         --kernel /tmp/kernel.gz --ramdisk "$INITRD" \
         ${DEVICE_BOOTIMG_ARGS} \
         --os_patch_level "$(date '+%Y-%m')" --cmdline "$CMDLINE" \
